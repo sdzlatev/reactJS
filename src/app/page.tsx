@@ -8,6 +8,7 @@ function generateRandomString(length) {
   for (var i = 0; i < length; i++) {
       text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
+  console.log('randomString:',text);
   return text;
 }
 
@@ -16,7 +17,9 @@ function generateCodeChallenge(code_verifier) {
 }
 
 function base64URL(string) {
-  return string.toString(CryptoJS.enc.Base64).replace(/=/g, '').replace(/\+/g, '-').replace(/\+/g, '_')
+  const result = string.toString(CryptoJS.enc.Base64).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');   
+  console.log('base:',result);
+  return result
 }
 
 function generateCodePair() {
@@ -25,17 +28,21 @@ function generateCodePair() {
   var challenge = base64URL((generateCodeChallenge(verifier)));
 
   return {
-    verifier: verifier,
-    challenge: challenge
+    verifier: encodeURI(verifier),
+    challenge: encodeURI(challenge)
   }
 }
 
 async function Authorize() {
   const codePair = generateCodePair();
   const res = await fetch ('https://kv7kzm78.api.commercecloud.salesforce.com/shopper/auth/v1/organizations/f_ecom_zzrl_059/oauth2/authorize?redirect_uri=http://localhost:3000/callback&response_type=code&client_id=aeef000c-c4c6-4e7e-96db-a98ee36c6292&hint=guest&code_challenge=' + codePair.challenge, {
-    redirect: 'manual'
+    redirect: 'manual',
+    cache: 'no-cache'
   });
-  const location = await res.headers.get('Location').split('?');
+  console.log('challenge:',codePair.challenge);
+  console.log(res);
+  const location = res.headers.get('Location').split('?');
+  console.log(location);
   const parameters = location[1].split('&');
   const usid = parameters.pop().substring(5);
   const code = parameters.pop().substring(5);
@@ -77,7 +84,7 @@ async function FetchProducts(token) {
     headers: {Authorization: 'Bearer ' + token}
   });
   var result = await res.json();
-  return await result;
+  return result;
 }
 
 async function retrieveProducts () {
@@ -87,7 +94,7 @@ async function retrieveProducts () {
   const products = await FetchProducts(bearerToken);
   products.data=authorizeData;
 
-  return await products;
+  return products;
 }
 
 export default async function Home() {
@@ -96,7 +103,7 @@ export default async function Home() {
   const {hits: products = []} = result;
   return (
     <div className="bg-white">
-      <p>Hello {products.length} {products.data}</p>
+      <p className="bg-sky-500/100">Hello {products.length} {products.data}</p>
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
         <h2 className="sr-only">Products</h2>
 
