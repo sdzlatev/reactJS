@@ -35,7 +35,7 @@ async function Authorize() {
   const res = await fetch ('https://kv7kzm78.api.commercecloud.salesforce.com/shopper/auth/v1/organizations/f_ecom_zzrl_059/oauth2/authorize?redirect_uri=http://localhost:3000/callback&response_type=code&client_id=aeef000c-c4c6-4e7e-96db-a98ee36c6292&hint=guest&code_challenge=' + codePair.challenge, {
     redirect: 'manual'
   });
-  const location = res.headers.get('Location').split('?');
+  const location = await res.headers.get('Location').split('?');
   const parameters = location[1].split('&');
   const usid = parameters.pop().substring(5);
   const code = parameters.pop().substring(5);
