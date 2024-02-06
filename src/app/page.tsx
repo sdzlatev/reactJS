@@ -85,15 +85,18 @@ async function retrieveProducts () {
   const authorizeData = await Authorize();
   const bearerToken = await CreateToken(authorizeData);
   const products = await FetchProducts(bearerToken);
+  products.data=authorizeData;
 
   return await products;
 }
 
 export default async function Home() {
+  console.log('start');
   const result = await retrieveProducts ();
   const {hits: products = []} = result;
   return (
     <div className="bg-white">
+      <p>Hello {products.length} {products.data}</p>
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
         <h2 className="sr-only">Products</h2>
 
